@@ -1,0 +1,43 @@
+No files changed, compilation skipped
+
+Ran 2 tests for test/staging/RaffleStagingTest.t.sol:RaffleTest
+[PASS] testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep() (gas: 90988)
+[PASS] testFulfillRandomWordsPicksAWinnerResetsAndSendsMoney() (gas: 90987)
+Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 40.19ms (15.09ms CPU time)
+
+Ran 15 tests for test/unit/RaffleTest.t.sol:RaffleTest
+[PASS] testCheckUpkeepReturnsFalseIfEnoughTimeHasntPassed() (gas: 92688)
+[PASS] testCheckUpkeepReturnsFalseIfItHasNoBalance() (gas: 19160)
+[PASS] testCheckUpkeepReturnsFalseIfRaffleIsntOpen() (gas: 266617)
+[PASS] testCheckUpkeepReturnsTrueWhenParametersGood() (gas: 95852)
+[PASS] testDontAllowPlayersToEnterWhileRaffleIsCalculating() (gas: 294605)
+[PASS] testEmitsEventOnEntrance() (gas: 89741)
+[PASS] testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep() (gas: 150561)
+[PASS] testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeepFuzzy(uint256) (runs: 1000, μ: 123319, ~: 123256)
+[PASS] testFulfillRandomWordsPicksAWinnerResetsAndSendsMoney() (gas: 565884)
+[PASS] testPerformUpkeepCanOnlyRunIfCheckUpkeepIsTrue() (gas: 262914)
+[PASS] testPerformUpkeepRevertsIfCheckUpkeepIsFalse() (gas: 119074)
+[PASS] testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId() (gas: 269010)
+[PASS] testRaffleInitializesInOpenState() (gas: 7665)
+[PASS] testRaffleRecordsPlayerWhenTheyEnter() (gas: 89330)
+[PASS] testRaffleRevertsWHenYouDontPayEnought() (gas: 31995)
+Suite result: ok. 15 passed; 0 failed; 0 skipped; finished in 13.78s (14.02s CPU time)
+| script/DeployRaffle.s.sol:DeployRaffle contract |                 |          |          |          |         |
+|-------------------------------------------------|-----------------|----------|----------|----------|---------|
+| Deployment Cost                                 | Deployment Size |          |          |          |         |
+| 30652763                                        | 141671          |          |          |          |         |
+| Function Name                                   | min             | avg      | median   | max      | # calls |
+| run                                             | 16150439        | 16150439 | 16150439 | 16150439 | 17      |
+
+
+| script/HelperConfig.s.sol:HelperConfig contract |                 |       |        |       |         |
+|-------------------------------------------------|-----------------|-------|--------|-------|---------|
+| Deployment Cost                                 | Deployment Size |       |        |       |         |
+| 0                                               | 24318           |       |        |       |         |
+| Function Name                                   | min             | avg   | median | max   | # calls |
+| getConfig                                       | 39665           | 39665 | 39665  | 39665 | 17      |
+
+
+
+
+Ran 2 test suites in 13.89s (13.82s CPU time): 17 tests passed, 0 failed, 0 skipped (17 total tests)

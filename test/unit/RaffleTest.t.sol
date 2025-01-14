@@ -5,7 +5,7 @@ pragma solidity ^0.8.19;
 import {DeployRaffle} from "../../script/DeployRaffle.s.sol";
 import {Raffle} from "../../src/Raffle.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
-import {Test, console2} from "forge-std/Test.sol";
+import {Test, console2, console} from "forge-std/Test.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 import {LinkToken} from "../../test/mocks/LinkToken.sol";
@@ -15,6 +15,7 @@ contract RaffleTest is Test, CodeConstants {
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
     //////////////////////////////////////////////////////////////*/
+    // Must redefine error in Test
     event RequestedRaffleWinner(uint256 indexed requestId);
     event RaffleEnter(address indexed player);
     event WinnerPicked(address indexed player);
@@ -107,7 +108,7 @@ contract RaffleTest is Test, CodeConstants {
     }
 
     /*//////////////////////////////////////////////////////////////
-                              CHECKUPKEEP
+                              CHECK UPKEEP
     //////////////////////////////////////////////////////////////*/
     function testCheckUpkeepReturnsFalseIfItHasNoBalance() public {
         // Arrange
@@ -165,7 +166,7 @@ contract RaffleTest is Test, CodeConstants {
     }
 
     /*//////////////////////////////////////////////////////////////
-                             PERFORMUPKEEP
+                             PERFORM UPKEEP
     //////////////////////////////////////////////////////////////*/
     function testPerformUpkeepCanOnlyRunIfCheckUpkeepIsTrue() public {
         // Arrange
@@ -184,6 +185,12 @@ contract RaffleTest is Test, CodeConstants {
         uint256 currentBalance = 0;
         uint256 numPlayers = 0;
         Raffle.RaffleState rState = raffle.getRaffleState();
+
+        // Enter with 1 player, but time not pass
+        raffle.enterRaffle{value: raffleEntranceFee}();
+        currentBalance = currentBalance + raffleEntranceFee;
+        numPlayers = 1;
+
         // Act / Assert
         vm.expectRevert(
             abi.encodeWithSelector(Raffle.Raffle__UpkeepNotNeeded.selector, currentBalance, numPlayers, rState)
@@ -202,17 +209,22 @@ contract RaffleTest is Test, CodeConstants {
         vm.recordLogs();
         raffle.performUpkeep(""); // emits requestId
         Vm.Log[] memory entries = vm.getRecordedLogs();
+        
+        // The index of entries represents the order of emitted events
+        // and the first index of topics is the event signature.
+        bytes32 performUpkeep_keccak256 = entries[1].topics[0];
         bytes32 requestId = entries[1].topics[1];
 
         // Assert
         Raffle.RaffleState raffleState = raffle.getRaffleState();
         // requestId = raffle.getLastRequestId();
+        assert(performUpkeep_keccak256 == keccak256("RequestedRaffleWinner(uint256)"));
         assert(uint256(requestId) > 0);
         assert(uint256(raffleState) == 1); // 0 = open, 1 = calculating
     }
 
     /*//////////////////////////////////////////////////////////////
-                           FULFILLRANDOMWORDS
+                           FULFILL RANDOMWORDS
     //////////////////////////////////////////////////////////////*/
     modifier raffleEntered() {
         vm.prank(PLAYER);
@@ -238,6 +250,12 @@ contract RaffleTest is Test, CodeConstants {
 
         vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
         VRFCoordinatorV2_5Mock(vrfCoordinatorV2_5).fulfillRandomWords(1, address(raffle));
+    }
+
+    // The name must start with `test`
+    function testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeepFuzzy(uint256 randomRequestId) public raffleEntered skipFork {
+        vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
+        VRFCoordinatorV2_5Mock(vrfCoordinatorV2_5).fulfillRandomWords(randomRequestId, address(raffle));
     }
 
     function testFulfillRandomWordsPicksAWinnerResetsAndSendsMoney() public raffleEntered skipFork {
